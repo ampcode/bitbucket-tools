@@ -17,7 +17,7 @@ A set of tools for agentic search over Bitbucket Server/Data Center instances.
 {
   "bitbucket": {
     "command": "bun",
-    "args": ["run", "/Users/jesseedelstein/Documents/bitbucket-fs/mcp.ts"],
+    "args": ["run", "/path/to/bitbucket-tools/mcp.ts"],
     "env": {
       "BITBUCKET_INSTANCE_URL": "https://your-bitbucket-server.com",
       "BITBUCKET_ACCESS_TOKEN": "your-access-token"
