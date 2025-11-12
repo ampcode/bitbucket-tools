@@ -1,6 +1,6 @@
-# Bitbucket MCP Server
+# Bitbucket Search Toolkit
 
-Model Context Protocol server for Bitbucket Server/Data Center integration.
+A set of tools for agentic search over Bitbucket Server/Data Center instances.
 
 ## Features
 
