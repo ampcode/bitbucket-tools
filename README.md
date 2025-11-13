@@ -64,3 +64,7 @@ Search for repositories by name/description.
 - `query` (required): Search keywords
 - `limit` (optional): Max results (default: 30)
 
+## License
+
+MIT
+
