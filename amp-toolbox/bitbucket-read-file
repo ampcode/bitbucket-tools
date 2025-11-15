@@ -1,0 +1,47 @@
+#!/usr/bin/env bun
+import { readFile, toolDefinition } from '../tools/read'
+
+const BITBUCKET_INSTANCE_URL = process.env.BITBUCKET_INSTANCE_URL
+const BITBUCKET_ACCESS_TOKEN = process.env.BITBUCKET_ACCESS_TOKEN
+
+if (!BITBUCKET_INSTANCE_URL || !BITBUCKET_ACCESS_TOKEN) {
+	console.error('Error: BITBUCKET_INSTANCE_URL and BITBUCKET_ACCESS_TOKEN must be set')
+	process.exit(1)
+}
+
+const config = {
+	baseURL: BITBUCKET_INSTANCE_URL,
+	token: BITBUCKET_ACCESS_TOKEN,
+}
+
+const action = process.env.TOOLBOX_ACTION
+
+if (action === 'describe') {
+	// Output tool description as JSON
+	process.stdout.write(JSON.stringify({
+		name: toolDefinition.name,
+		description: toolDefinition.description,
+		inputSchema: toolDefinition.inputSchema,
+	}))
+} else if (action === 'execute') {
+	// Read arguments from stdin
+	const stdinBuffer = []
+	
+	process.stdin.on('data', (chunk) => {
+		stdinBuffer.push(chunk)
+	})
+	
+	process.stdin.on('end', async () => {
+		try {
+			const args = JSON.parse(Buffer.concat(stdinBuffer).toString())
+			const result = await readFile(args, config)
+			process.stdout.write(JSON.stringify(result, null, 2))
+		} catch (error) {
+			console.error(`Error: ${error?.message ?? String(error)}`)
+			process.exit(1)
+		}
+	})
+} else {
+	console.error('Error: TOOLBOX_ACTION must be set to "describe" or "execute"')
+	process.exit(1)
+}

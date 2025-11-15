@@ -10,8 +10,32 @@ A set of tools for agentic search over Bitbucket Server/Data Center instances.
 - **Glob Files**: Find files matching glob patterns
 - **Search Repositories**: Search for repositories by name/description
 
+## Usage
 
-### MCP Client Template
+This toolkit can be used in two ways:
+
+### 1. As an Amp Toolbox (see more at https://ampcode.com/manual#toolboxes)
+
+Set the environment variables and point `AMP_TOOLBOX` to the `amp-toolbox` directory:
+
+```bash
+# Set environment variables
+export BITBUCKET_INSTANCE_URL="https://your-bitbucket-server.com"
+export BITBUCKET_ACCESS_TOKEN="your-access-token"
+export AMP_TOOLBOX="/path/to/bitbucket-tools/amp-toolbox"
+```
+
+Amp will automatically discover and use the following Bitbucket tools:
+
+- `bitbucket-read-file` - Read file contents from repositories
+- `bitbucket-search-code` - Search for code patterns
+- `bitbucket-list-projects` - List available projects
+- `bitbucket-glob-files` - Find files matching glob patterns
+- `bitbucket-search-repositories` - Search for repositories
+
+### 2. As an MCP Server
+
+Configure your MCP client with:
 
 ```json
 {
