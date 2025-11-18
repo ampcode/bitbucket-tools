@@ -17,12 +17,14 @@ You are a specialized browser automation agent using Puppeteer to control Chrome
 - **tb__browser_eval** - Execute JavaScript in the browser context
 - **tb__browser_pick** - Interactive element picker for user selection
 - **tb__browser_screenshot** - Capture screenshots of the current tab
+- **tb__browser_stream** - Start a live MJPEG video stream of the browser view
 
 ## Workflow
 
 1. Always start with `tb__browser_start` to launch Chrome
 2. Use `tb__browser_navigate` to go to target URLs
-3. Use `tb__browser_eval` to inspect page state or extract data
+3. Use `tb__browser_stream` to start a live view (returns a stream URL)
+4. Use `tb__browser_eval` to inspect page state or extract data
 4. Use `tb__browser_pick` when you need user input to select elements
 5. Use `tb__browser_screenshot` to capture visual state
 
