@@ -13,7 +13,7 @@ Specialized subagent tools with custom system prompts, models, and filtered tool
 ```markdown
 ---
 type: subagent
-model: claude-sonnet-4-5-20250929
+model: sonnet
 tools: [Read, edit_file, Grep, tb__typescript_*]
 ---
 # Refactoring Assistant
