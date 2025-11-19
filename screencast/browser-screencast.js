@@ -13,7 +13,7 @@
  */
 
 const http = require('http');
-const WebSocket = require('ws');
+const WebSocket = require('ws'); // Still needed for CDP connections
 
 // Parse command line arguments
 const args = process.argv.slice(2);
@@ -99,14 +99,14 @@ const HTML_PAGE = `
 </head>
 <body>
   <div class="container">
-    <h1>🎬 Browser Screencast</h1>
+    <h1>Browser Screencast</h1>
     <div id="status" class="status connecting">Connecting...</div>
     <div class="screen-container">
       <img id="screen" alt="Browser screen" />
     </div>
     <div class="controls">
-      <button onclick="togglePause()">⏸ Pause</button>
-      <button onclick="takeSnapshot()">📸 Snapshot</button>
+      <button onclick="togglePause()">Pause</button>
+      <button onclick="takeSnapshot()">Snapshot</button>
       <div class="stats">
         <span id="fps">0</span> FPS | 
         <span id="frames">0</span> frames
@@ -120,21 +120,21 @@ const HTML_PAGE = `
     const fpsDisplay = document.getElementById('fps');
     const framesDisplay = document.getElementById('frames');
     
-    let ws;
+    let eventSource;
     let paused = false;
     let frameCount = 0;
     let lastFpsUpdate = Date.now();
     let fpsFrameCount = 0;
     
     function connect() {
-      ws = new WebSocket('ws://' + location.host + '/ws');
+      eventSource = new EventSource('/stream');
       
-      ws.onopen = () => {
-        status.textContent = '🟢 Connected - Streaming';
+      eventSource.onopen = () => {
+        status.textContent = 'Connected - Streaming';
         status.className = 'status connected';
       };
       
-      ws.onmessage = (event) => {
+      eventSource.onmessage = (event) => {
         if (paused) return;
         
         screen.src = 'data:image/jpeg;base64,' + event.data;
@@ -150,21 +150,18 @@ const HTML_PAGE = `
         }
       };
       
-      ws.onclose = () => {
-        status.textContent = '🔴 Disconnected - Reconnecting...';
+      eventSource.onerror = () => {
+        status.textContent = 'Disconnected - Reconnecting...';
         status.className = 'status disconnected';
+        eventSource.close();
         setTimeout(connect, 2000);
-      };
-      
-      ws.onerror = (err) => {
-        console.error('WebSocket error:', err);
       };
     }
     
     function togglePause() {
       paused = !paused;
-      event.target.textContent = paused ? '▶ Resume' : '⏸ Pause';
-      status.textContent = paused ? '⏸ Paused' : '🟢 Connected - Streaming';
+      event.target.textContent = paused ? 'Resume' : 'Pause';
+      status.textContent = paused ? 'Paused' : 'Connected - Streaming';
     }
     
     function takeSnapshot() {
@@ -192,32 +189,39 @@ class BrowserScreencast {
   }
 
   async start() {
-    // Start HTTP server
+    // Start HTTP server with SSE support
     const server = http.createServer((req, res) => {
-      if (req.url === '/' || req.url === '/index.html') {
+      if (req.url === '/' || req.url === '/index.html' || req.url === '/viewer') {
         res.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8' });
         res.end(HTML_PAGE);
+      } else if (req.url === '/stream') {
+        // Server-Sent Events endpoint
+        res.writeHead(200, {
+          'Content-Type': 'text/event-stream',
+          'Cache-Control': 'no-cache, no-store, must-revalidate',
+          'Connection': 'keep-alive',
+          'Access-Control-Allow-Origin': '*',
+          'X-Accel-Buffering': 'no'
+        });
+        
+        // Send initial comment to establish connection
+        res.write(':ok\n\n');
+        
+        console.log('Client connected (SSE)');
+        this.clients.add(res);
+        
+        req.on('close', () => {
+          console.log('Client disconnected (SSE)');
+          this.clients.delete(res);
+        });
       } else {
         res.writeHead(404);
         res.end('Not found');
       }
     });
 
-    // Start WebSocket server for clients
-    const wss = new WebSocket.Server({ server, path: '/ws' });
-    
-    wss.on('connection', (ws) => {
-      console.log('Client connected');
-      this.clients.add(ws);
-      
-      ws.on('close', () => {
-        console.log('Client disconnected');
-        this.clients.delete(ws);
-      });
-    });
-
     server.listen(CONFIG.httpPort, () => {
-      console.log(`\n🎬 Screencast server running at http://localhost:${CONFIG.httpPort}\n`);
+      console.log(`\nScreencast server running at http://localhost:${CONFIG.httpPort}\n`);
     });
 
     // Connect to Chrome DevTools
@@ -320,6 +324,9 @@ class BrowserScreencast {
 
   async connectToPage(targetId) {
     if (this.currentTargetId === targetId) return;
+    if (this.isConnecting) return; // Prevent race conditions
+    
+    this.isConnecting = true;
     
     // Close existing page connection
     if (this.pageWs) {
@@ -337,6 +344,7 @@ class BrowserScreencast {
     
     if (!target) {
       console.error('Target not found:', targetId);
+      this.isConnecting = false;
       return;
     }
 
@@ -345,6 +353,7 @@ class BrowserScreencast {
     this.pageWs = new WebSocket(target.webSocketDebuggerUrl);
     
     this.pageWs.on('open', () => {
+      this.isConnecting = false;
       this.startScreencast();
     });
 
@@ -356,10 +365,12 @@ class BrowserScreencast {
     this.pageWs.on('close', () => {
       console.log('Page connection closed');
       this.isStreaming = false;
+      this.isConnecting = false;
     });
 
     this.pageWs.on('error', (err) => {
       console.error('Page WebSocket error:', err.message);
+      this.isConnecting = false;
     });
   }
 
@@ -389,10 +400,13 @@ class BrowserScreencast {
       // Acknowledge the frame
       this.sendPage('Page.screencastFrameAck', { sessionId });
       
-      // Send to all connected clients
+      // Send to all connected SSE clients
       for (const client of this.clients) {
-        if (client.readyState === WebSocket.OPEN) {
-          client.send(data);
+        try {
+          client.write(`data: ${data}\n\n`);
+        } catch (err) {
+          // Client disconnected
+          this.clients.delete(client);
         }
       }
       

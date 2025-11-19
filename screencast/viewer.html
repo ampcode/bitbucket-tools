@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>Browser Screencast Viewer</title>
+  <style>
+    body {
+      margin: 0;
+      padding: 20px;
+      background: #1a1a1a;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      color: #fff;
+    }
+    .container {
+      max-width: 1400px;
+      margin: 0 auto;
+    }
+    h1 {
+      margin: 0 0 10px 0;
+      font-size: 24px;
+      font-weight: 500;
+    }
+    .status {
+      margin-bottom: 15px;
+      padding: 8px 12px;
+      border-radius: 4px;
+      font-size: 14px;
+    }
+    .status.connected { background: #1e4620; }
+    .status.disconnected { background: #4a1e1e; }
+    .status.connecting { background: #4a3d1e; }
+    .screen-container {
+      background: #000;
+      border-radius: 8px;
+      overflow: hidden;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.5);
+    }
+    #screen {
+      display: block;
+      width: 100%;
+      height: auto;
+    }
+    .controls {
+      margin-top: 15px;
+      display: flex;
+      gap: 10px;
+      align-items: center;
+    }
+    button {
+      padding: 8px 16px;
+      border: none;
+      border-radius: 4px;
+      background: #333;
+      color: #fff;
+      cursor: pointer;
+      font-size: 14px;
+    }
+    button:hover { background: #444; }
+    button:active { background: #555; }
+    .stats {
+      margin-left: auto;
+      font-size: 12px;
+      color: #888;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Browser Screencast Viewer</h1>
+    <div id="status" class="status connecting">Connecting to screencast server...</div>
+    <div class="screen-container">
+      <img id="screen" alt="Browser screen" />
+    </div>
+    <div class="controls">
+      <button onclick="togglePause()">Pause</button>
+      <button onclick="takeSnapshot()">Snapshot</button>
+      <div class="stats">
+        <span id="fps">0</span> FPS | 
+        <span id="frames">0</span> frames
+      </div>
+    </div>
+  </div>
+  
+  <script>
+    const screen = document.getElementById('screen');
+    const status = document.getElementById('status');
+    const fpsDisplay = document.getElementById('fps');
+    const framesDisplay = document.getElementById('frames');
+    
+    let eventSource;
+    let paused = false;
+    let frameCount = 0;
+    let lastFpsUpdate = Date.now();
+    let fpsFrameCount = 0;
+    
+    function connect() {
+      // Connect to the screencast server on port 3000
+      eventSource = new EventSource('http://localhost:3000/stream');
+      
+      eventSource.onopen = () => {
+        status.textContent = 'Connected - Streaming';
+        status.className = 'status connected';
+      };
+      
+      eventSource.onmessage = (event) => {
+        if (paused) return;
+        
+        screen.src = 'data:image/jpeg;base64,' + event.data;
+        frameCount++;
+        fpsFrameCount++;
+        framesDisplay.textContent = frameCount;
+        
+        const now = Date.now();
+        if (now - lastFpsUpdate >= 1000) {
+          fpsDisplay.textContent = fpsFrameCount;
+          fpsFrameCount = 0;
+          lastFpsUpdate = now;
+        }
+      };
+      
+      eventSource.onerror = () => {
+        status.textContent = 'Disconnected - Reconnecting...';
+        status.className = 'status disconnected';
+        eventSource.close();
+        setTimeout(connect, 2000);
+      };
+    }
+    
+    function togglePause() {
+      paused = !paused;
+      event.target.textContent = paused ? 'Resume' : 'Pause';
+      status.textContent = paused ? 'Paused' : 'Connected - Streaming';
+    }
+    
+    function takeSnapshot() {
+      const link = document.createElement('a');
+      link.download = 'screenshot-' + Date.now() + '.jpg';
+      link.href = screen.src;
+      link.click();
+    }
+    
+    connect();
+  </script>
+</body>
+</html>
