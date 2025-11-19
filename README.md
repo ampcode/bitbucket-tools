@@ -40,4 +40,23 @@ A set of tools for agentic search over Bitbucket Server/Data Center instances.
 - **Glob Files**: Find files matching glob patterns
 - **Search Repositories**: Search for repositories by name/description
 
-See [bitbucket-tools/README.md](bitbucket-tools/README.md) for detailed configuration and usage instructions.
+See [bitbucket/README.md](bitbucket/README.md) for detailed configuration and usage instructions.
+
+## Browser Toolkit
+
+A web browser automation skill that allows Amp to interact with web pages by clicking buttons, filling out forms, and navigating links. It works by remote controlling Google Chrome or Chromium browsers using the Chrome DevTools Protocol (CDP).
+
+See [browser/README.md](browser/README.md) for details.
+
+## React Analysis Toolkit
+
+A collection of tools for analyzing React/TypeScript codebases:
+
+- **analyze_dependency_graph**: Analyze module dependencies
+- **check_ts_syntax**: Validate TypeScript syntax
+- **detect_browser_apis**: Find browser API usage
+- **detect_imports**: Analyze import patterns
+- **detect_jsx_patterns**: Identify JSX usage patterns
+- **detect_style_usage**: Find styling approaches (CSS modules, styled-components, etc.)
+
+See the [react/](react/) directory for individual tool usage.
