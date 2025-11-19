@@ -1,0 +1,13 @@
+{
+  "name": "browser-screencast",
+  "version": "1.0.0",
+  "description": "Live browser screencast using Chrome DevTools Protocol",
+  "main": "browser-screencast.js",
+  "scripts": {
+    "start": "node browser-screencast.js",
+    "dev": "node browser-screencast.js --fps 15 --quality 90"
+  },
+  "dependencies": {
+    "ws": "^8.14.2"
+  }
+}
