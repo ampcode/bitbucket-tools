@@ -1,52 +1,86 @@
 ---
 name: maestro-devtools
-description: A wrapper around Maestro CLI that allows for atomic UI interactions (tap, type) and inspection without writing YAML files manually. Useful for debugging, benchmarking, and verifying UI parity between Native and Web.
+description: A specialized skill for verifying feature parity between Native Mobile Apps and Mobile Web/WebViews. It instructs the agent to accept a test case, execute it step-by-step on both platforms using the Maestro Bridge, and report any discrepancies in behavior or performance.
 allowed-tools: Bash, Read
 ---
 
-# Maestro DevTools
+# Maestro DevTools: Parity & Comparison
 
-This skill provides a bridge to the Maestro mobile testing framework, allowing you to interact with running Android/iOS apps or Mobile Web browsers using simple atomic commands.
+This skill is designed to **compare Native vs. Web implementations**. When you receive an instruction to test a feature (e.g., "Check the login flow"), you must execute the sequence of actions on **both** the Native App and the Web version to verify they behave identically.
 
-## Capabilities
+## Workflow: Parity Check
 
-- **Tap**: Click on UI elements by text or ID.
-- **Type**: Input text into fields.
-- **Inspect**: View the current UI hierarchy (View XML).
-- **Targeting**: Switch seamlessy between `native` app and `web` (WebView/Browser) contexts.
+When given a task (e.g., "Verify the search bar works"), follow this strict loop:
 
-## Prerequisite
-- Maestro CLI must be installed (`curl -Ls "https://get.maestro.mobile.dev" | bash`)
-- A simulator/emulator must be running.
+1.  **Plan the Atomic Steps**: Break the user's request down into simple UI actions (e.g., "Tap Search", "Type 'shoes'", "Tap Enter").
+2.  **Execute on Native**: Run the step using the bridge script with `--target native`.
+3.  **Execute on Web**: Run the *same* step using the bridge script with `--target web`.
+4.  **Compare & Verify**:
+    *   Did both succeed?
+    *   If one failed, stop and report the discrepancy.
+    *   (Optional) Use `inspect` to verify the UI hierarchy matches if specific IDs are needed.
 
-## Usage
+## The Tool: `maestro_bridge.py`
 
-The tool is a Python script located at `maestro_bridge.py`.
+You have a python script that handles the execution. You do NOT need to write YAML files.
 
-### 1. Tapping Elements
-Tap by visible text or accessibility ID.
+### Command Reference
 
+#### Tap
 ```bash
-# Native App
-./maestro_bridge.py tap "Login Button" --target native
+# Native
+./maestro_bridge.py tap "Text" --target native
 
-# Web Browser (automatically navigates to URL if needed)
-./maestro_bridge.py tap "Login Button" --target web --url "http://localhost:8081"
+# Web
+./maestro_bridge.py tap "Text" --target web
 ```
 
-### 2. Typing Text
+#### Type
 ```bash
-./maestro_bridge.py type "user@example.com"
+# Native
+./maestro_bridge.py type "hello" --target native
+
+# Web
+./maestro_bridge.py type "hello" --target web
 ```
 
-### 3. Inspecting UI
-Dumps the current view hierarchy (useful to find IDs).
+#### Inspect
 ```bash
 ./maestro_bridge.py inspect
 ```
 
-### 4. Configuration
-You can override the App ID:
-```bash
-./maestro_bridge.py tap "Submit" --app-id "com.mycompany.app"
-```
+### Configuration Defaults
+- **App ID**: `com.example.app` (Override with `--app-id`)
+- **Web URL**: `http://localhost:8081` (Override with `--url`)
+
+## Example Scenario
+
+**User Instruction:** "Test that the 'Profile' button navigates to the settings page."
+
+**Agent Execution Plan:**
+
+1.  **Step 1 (Native):**
+    ```bash
+    ./maestro_bridge.py tap "Profile" --target native
+    ```
+    *(Check output: "Success")*
+
+2.  **Step 1 (Web):**
+    ```bash
+    ./maestro_bridge.py tap "Profile" --target web
+    ```
+    *(Check output: "Success")*
+
+3.  **Step 2 (Native - Verification):**
+    ```bash
+    ./maestro_bridge.py tap "Settings" --target native
+    ```
+    *(Check output: "Success" -> implies we are on the right page)*
+
+4.  **Step 2 (Web - Verification):**
+    ```bash
+    ./maestro_bridge.py tap "Settings" --target web
+    ```
+    *(Check output: "Element not found" -> **DISCREPANCY FOUND**)*
+
+5.  **Report:** "Parity Check Failed: Tapping 'Profile' on Web did not lead to a page with a 'Settings' button, but it did on Native."
