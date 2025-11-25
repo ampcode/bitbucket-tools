@@ -30,17 +30,17 @@ Simple executable files (Bash, Python, etc.) that respond to `describe` and `exe
 - **Execute:** Called with `TOOLBOX_ACTION=execute`. Receives arguments on stdin (JSON or text) and performs the action.
 - **Naming:** Tools are registered with a `tb__` prefix (e.g., `tb__mytool`).
 
-## Bitbucket Search Toolkit
+## Bitbucket & GitLab Search Toolkits
 
-A set of tools for agentic search over Bitbucket Server/Data Center instances.
+Amp includes a built-in Librarian tool for searching GitHub repositories. These toolkits extend that capability to Bitbucket and GitLab, giving Amp the same agentic code search abilities across your enterprise source control systems.
 
-- **Read Files**: Read file contents from Bitbucket repositories
-- **Search Code**: Search for code patterns across repositories
-- **List Projects**: Browse available Bitbucket projects
+**Shared capabilities:**
+- **Read Files**: Read file contents from repositories
+- **Search Code**: Search for code patterns across projects
+- **List Projects**: Browse available projects
 - **Glob Files**: Find files matching glob patterns
-- **Search Repositories**: Search for repositories by name/description
 
-See [bitbucket/README.md](bitbucket/README.md) for detailed configuration and usage instructions.
+See [bitbucket/README.md](bitbucket/README.md) and [gitlab/](gitlab/) for configuration.
 
 ## Browser Toolkit
 
