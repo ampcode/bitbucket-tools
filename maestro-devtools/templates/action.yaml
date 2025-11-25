@@ -1,0 +1,7 @@
+appId: {{APP_ID}}
+---
+- launchApp:
+    clearState: false
+{{SETUP_STEPS}}
+- {{COMMAND}}: {{VALUE}}
+- takeScreenshot: "last_action"
