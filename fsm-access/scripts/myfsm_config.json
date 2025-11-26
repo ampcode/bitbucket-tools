@@ -1,0 +1,64 @@
+{
+  "systems": {
+    "EDW-TDP7": {
+      "name": "EDW-TDP7 (PROD)",
+      "roles": [
+        "EW_SEL_PROD_Base",
+        "Customer_General Personal data",
+        "CustomerGroup_External Financial Planner Wealth Data",
+        "CustomerGroup_Internal Financial Dealer Group Wealth Data",
+        "CustomerGroup_Internal Financial Advisor Wealth Data",
+        "CustomerGroup_Wealth Customers",
+        "CustomerGroup_White Label",
+        "Customer_Credit Card Numbers",
+        "Financial_GL_Books - 1 & 2 (previously GL WBC and GL Book 2)",
+        "EW_SEL_EWP1AFLASH",
+        "EW_SEL_EWP1AFLASHLOG",
+        "EW_SEL_EWP1VFACE_BASE",
+        "EW_SEL_EWP1VSRDE_BASE",
+        "EW_SEL_EWP1VTBLA_ERR",
+        "EW_SEL_EWP1VCCR_BASE",
+        "EW_SEL_EWP1AEFS"
+      ]
+    },
+    "SGDWTDP7": {
+      "name": "SGDW-TDP7 (PROD)",
+      "roles": [
+        "DW_SEL_PROD_Base",
+        "DW_SEL_DWPVALMI",
+        "DW_Sel_DWPVTCS_Base"
+      ]
+    },
+    "WGDW": {
+      "name": "WGDW-TDP7 (PROD)",
+      "roles": [
+        "WD_BRDM_GENERAL",
+        "WD_CRDM_GENERAL",
+        "WD_CRDM_RISK",
+        "WD_NW_ALL_ACCT",
+        "WD_NW_ACCOUNT_ALL",
+        "WD_NW_ACCOUNT",
+        "WD_NW_COLLECT",
+        "WD_NW_CREDIT",
+        "WD_NW_CREDIT_FULL",
+        "WD_NW_CREDIT_CARD",
+        "WD_NW_ESR",
+        "WD_NW_MORTGAGE_MSS",
+        "WD_NW_MORTGAGE_OS",
+        "WD_NW_NZ_DATA",
+        "WD_NW_REF",
+        "WD_CREDIT_MIS_DEMI",
+        "WD_NW_CUSTOMER",
+        "WD_NW_CDMS"
+      ]
+    }
+  },
+  "defaults": {
+    "comment": "New starter position on Corporate Services, CR&A, Regulatory Reporting Uplift team. This access is required for regulatory EFS APRA reporting.",
+    "questions": {
+      "q1": "I am Senior Data Analyst and new member of the Corporate Services, CR&A, Regulatory Reporting Uplift team. I require this access for the management of regulatory EFS APRA reporting",
+      "q2": "N/A - Data will not be stored.",
+      "q3": "N/A - no entity/party will access this data as it is not extracted by me."
+    }
+  }
+}
